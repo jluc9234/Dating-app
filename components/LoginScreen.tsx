@@ -5,11 +5,10 @@ import { getRandomGradient } from '../constants';
 const LoginScreen: React.FC = () => {
     const [isLoginView, setIsLoginView] = useState(true);
     const [name, setName] = useState('');
-    const [email, setEmail] = useState('demo@user.com');
-    const [password, setPassword] = useState('password');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-    const { login, signup } = useAuth();
+    const { login, signup, isLoading } = useAuth();
 
     const [logoGradient] = useState(() => getRandomGradient());
     const [buttonGradient, setButtonGradient] = useState(() => getRandomGradient());
@@ -17,7 +16,6 @@ const LoginScreen: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
-        setIsLoading(true);
         setButtonGradient(getRandomGradient());
 
         try {
@@ -28,20 +26,19 @@ const LoginScreen: React.FC = () => {
             }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An unknown error occurred.');
-            setIsLoading(false);
         }
     };
     
     const toggleView = () => {
         setIsLoginView(!isLoginView);
         setError('');
-        // Reset fields for demo purposes
+        // Reset fields when switching views
         if (isLoginView) { // if we are switching TO signup
             setEmail('');
             setPassword('');
         } else { // if we are switching TO login
-            setEmail('demo@user.com');
-            setPassword('password');
+            setEmail('');
+            setPassword('');
         }
     };
 
@@ -99,8 +96,6 @@ const LoginScreen: React.FC = () => {
                         </div>
 
                         {error && <p className="text-red-400 text-sm text-center">{error}</p>}
-
-                        {isLoginView && <p className="text-xs text-slate-500 text-center">Demo login: demo@user.com / password</p>}
 
                         <button
                             type="submit"
