@@ -1,16 +1,17 @@
+/// <reference types="vite/client" />
+
 import { GoogleGenAI, Type } from "@google/genai";
 import { DateCategory, LocalIdea, LocalEvent, DateSuggestion, BudgetOption, DressCodeOption, Message, User } from "../types";
 import { DATE_CATEGORIES } from "../constants";
 
 const API_KEY = import.meta.env.VITE_API_KEY;
 
-if (!API_KEY) {
-  throw new Error("API_KEY environment variable not set");
-}
-
-const ai = new GoogleGenAI({ apiKey: API_KEY });
+const ai = API_KEY ? new GoogleGenAI({ apiKey: API_KEY }) : null;
 
 export const enhanceDescription = async (description: string): Promise<string> => {
+  if (!ai) {
+    return description; // Fallback: return original
+  }
   try {
     const prompt = `You are a creative and witty dating assistant. Enhance the following date description to make it sound more engaging, romantic, and appealing. Keep it concise (2-3 sentences) and exciting.
     Original description: "${description}"
@@ -29,6 +30,13 @@ export const enhanceDescription = async (description: string): Promise<string> =
 };
 
 export const generateDateIdea = async (keywords: string): Promise<{ title: string; description: string; location?: string }> => {
+    if (!ai) {
+        return {
+            title: "Sample Date Idea",
+            description: "Enjoy a casual coffee date at a local café.",
+            location: "Local Café"
+        };
+    }
     try {
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
@@ -61,6 +69,9 @@ export const generateDateIdea = async (keywords: string): Promise<{ title: strin
 };
 
 export const categorizeDate = async (title: string, description: string): Promise<DateCategory> => {
+    if (!ai) {
+        return DateCategory.Uncategorized;
+    }
     try {
         const prompt = `Categorize the following date idea into one of these categories: ${DATE_CATEGORIES.join(', ')}.
         Title: "${title}"
@@ -84,6 +95,9 @@ export const categorizeDate = async (title: string, description: string): Promis
 };
 
 export const generateIcebreaker = async (name: string): Promise<string> => {
+    if (!ai) {
+        return "Hey! How's it going?";
+    }
     try {
         const prompt = `Create a short, fun, and charming icebreaker message to send to a new match named ${name}.`;
         const response = await ai.models.generateContent({
@@ -98,6 +112,9 @@ export const generateIcebreaker = async (name: string): Promise<string> => {
 };
 
 export const enhanceBio = async (bio: string): Promise<string> => {
+    if (!ai) {
+        return bio;
+    }
     try {
         const prompt = `You are a witty and charming profile writer. Enhance the following user bio to make it more engaging and interesting, while keeping the original spirit. Keep it under 50 words.
         Original bio: "${bio}"
@@ -114,6 +131,9 @@ export const enhanceBio = async (bio: string): Promise<string> => {
 };
 
 export const getLocalDateIdeas = async (location: string): Promise<LocalIdea[]> => {
+    if (!ai) {
+        return [];
+    }
     try {
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
@@ -141,6 +161,9 @@ export const getLocalDateIdeas = async (location: string): Promise<LocalIdea[]> 
 };
 
 export const getLocalEvents = async (location: string, date: string): Promise<LocalEvent[]> => {
+    if (!ai) {
+        return [];
+    }
     try {
         const formattedDate = new Date(date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
         const response = await ai.models.generateContent({
@@ -176,6 +199,13 @@ export const generateDateSuggestions = async (criteria: {
     budget?: BudgetOption;
     dressCode?: DressCodeOption;
 }): Promise<DateSuggestion[]> => {
+    if (!ai) {
+        return [
+            { title: "Romantic Dinner", description: "A cozy dinner at a nice restaurant." },
+            { title: "Park Walk", description: "A relaxing stroll in the park." },
+            { title: "Movie Night", description: "Watching a movie together." }
+        ];
+    }
     try {
         let prompt = "Generate 3 creative date ideas based on the following user-provided details. For each idea, provide a catchy title and a short, appealing description.\n";
         if (criteria.title) prompt += `- A title that includes or is similar to: "${criteria.title}"\n`;
@@ -217,6 +247,9 @@ export const generateDateSuggestions = async (criteria: {
 };
 
 export const generateBackgroundImage = async (prompt: string): Promise<string | null> => {
+    if (!ai) {
+        return null;
+    }
     try {
         const fullPrompt = `A beautiful, aesthetic, high-resolution phone wallpaper background based on the theme: "${prompt}". The style should be modern and visually pleasing, suitable for a sleek app background. Avoid text or distracting elements.`;
         const response = await ai.models.generateImages({
@@ -245,6 +278,9 @@ export const getConversationSuggestions = async (
     currentUser: User,
     otherUser: User
 ): Promise<string[]> => {
+    if (!ai) {
+        return ["How's your week going?", "Anything fun planned for the weekend?", "I'm having trouble with my AI, but I'd love to chat!"];
+    }
     try {
         const conversationHistory = messages.map(msg => {
             const senderName = msg.senderId === currentUser.id ? currentUser.name : otherUser.name;
