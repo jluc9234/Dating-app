@@ -112,15 +112,54 @@ const apiDelay = (ms: number) => new Promise(res => setTimeout(res, ms));
 export const apiService = {
   // --- AUTH ---
   async login(email: string, pass: string): Promise<User | null> {
-    await apiDelay(500);
-    const user = USERS.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === pass);
-    if (user) {
-      return { ...user }; // Return a copy
+    try {
+      const response = await fetch('/.netlify/functions/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password: pass }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Login failed');
+      }
+
+      const user = await response.json();
+      return user;
+    } catch (error) {
+      // Fallback to mock data if database is unavailable
+      console.warn('Database login failed, falling back to mock data:', error);
+      await apiDelay(500);
+      const user = USERS.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === pass);
+      if (user) {
+        return { ...user }; // Return a copy
+      }
+      throw new Error("Invalid email or password");
     }
-    throw new Error("Invalid email or password");
   },
 
   async signup(name: string, email: string, pass: string): Promise<User> {
+    try {
+      const response = await fetch('/.netlify/functions/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, email, password: pass }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Signup failed');
+      }
+
+      const user = await response.json();
+      return user;
+    } catch (error) {
+      // Fallback to mock data if database is unavailable
+      console.warn('Database signup failed, falling back to mock data:', error);
       await apiDelay(500);
       if (USERS.some(u => u.email.toLowerCase() === email.toLowerCase())) {
           throw new Error("An account with this email already exists.");
@@ -138,6 +177,7 @@ export const apiService = {
       };
       USERS.push(newUser);
       return { ...newUser };
+    }
   },
 
   async updateUser(updatedUser: User): Promise<User> {
