@@ -18,7 +18,7 @@ import MonetizationModal from './components/MonetizationModal';
 import NotificationToast from './components/NotificationToast';
 
 const App: React.FC = () => {
-    const { currentUser } = useAuth();
+    const { currentUser, loading } = useAuth();
     const { toastQueue } = useNotification();
 
     const [activeView, setActiveView] = useState<ActiveView>('swipe');
@@ -47,6 +47,14 @@ const App: React.FC = () => {
              setActiveView('dates');
         });
     };
+
+    if (loading) {
+        return (
+            <div className="bg-gradient-to-br from-slate-900 via-black to-slate-900 h-screen w-screen overflow-hidden text-white font-sans flex items-center justify-center">
+                <div className="text-2xl">Loading...</div>
+            </div>
+        );
+    }
 
     if (!currentUser) {
         return <LoginScreen />;

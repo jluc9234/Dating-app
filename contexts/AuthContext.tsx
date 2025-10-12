@@ -1,6 +1,6 @@
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { User } from '../types';
-import { apiService } from '../services/apiService';
+import { useUser, useStackApp } from '@stackframe/stack';
 
 interface AuthContextType {
   currentUser: User | null;
@@ -8,49 +8,103 @@ interface AuthContextType {
   logout: () => void;
   signup: (name: string, email: string, pass: string) => Promise<void>;
   updateUser: (updatedUser: User) => void;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [currentUser, setCurrentUser] = useState<User | null>(() => {
-    try {
-      const item = window.localStorage.getItem('currentUser');
-      return item ? JSON.parse(item) : null;
-    } catch (error) {
-      console.error(error);
-      return null;
-    }
-  });
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const stackUser = useUser();
+  const stackApp = useStackApp();
+
+  useEffect(() => {
+    // Initialize user from Stack Auth
+    const initUser = () => {
+      try {
+        if (stackUser) {
+          // Convert Stack user to our User type
+          const user: User = {
+            id: stackUser.id,
+            name: stackUser.displayName || stackUser.primaryEmail || 'User',
+            email: stackUser.primaryEmail || '',
+            age: 25, // Default age, can be updated in profile
+            bio: '',
+            images: [],
+            interests: [],
+            isPremium: false
+          };
+          setCurrentUser(user);
+          
+          // Also store in localStorage for backward compatibility
+          window.localStorage.setItem('currentUser', JSON.stringify(user));
+        } else {
+          setCurrentUser(null);
+          window.localStorage.removeItem('currentUser');
+        }
+      } catch (error) {
+        console.error('Auth initialization error:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initUser();
+  }, [stackUser]);
 
   const login = async (email: string, pass: string) => {
-    const user = await apiService.login(email, pass);
-    if (user) {
-        setCurrentUser(user);
-        window.localStorage.setItem('currentUser', JSON.stringify(user));
+    try {
+      setLoading(true);
+      await stackApp.signInWithCredential({ email, password: pass });
+      // The useEffect will handle setting the user
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    } finally {
+      setLoading(false);
     }
   };
 
   const signup = async (name: string, email: string, pass: string) => {
-    const newUser = await apiService.signup(name, email, pass);
-    setCurrentUser(newUser);
-    window.localStorage.setItem('currentUser', JSON.stringify(newUser));
+    try {
+      setLoading(true);
+      await stackApp.signUpWithCredential({ 
+        email, 
+        password: pass 
+      });
+      // The useEffect will handle setting the user
+    } catch (error) {
+      console.error('Signup error:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const logout = () => {
-    setCurrentUser(null);
-    window.localStorage.removeItem('currentUser');
+  const logout = async () => {
+    try {
+      await stackApp.signOut();
+      setCurrentUser(null);
+      window.localStorage.removeItem('currentUser');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
   
   const updateUser = async (updatedUser: User) => {
     if (!currentUser || currentUser.id !== updatedUser.id) return;
-    const user = await apiService.updateUser(updatedUser);
-    setCurrentUser(user);
-    window.localStorage.setItem('currentUser', JSON.stringify(user));
+    
+    try {
+      setCurrentUser(updatedUser);
+      window.localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+    } catch (error) {
+      console.error('Update user error:', error);
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ currentUser, login, logout, signup, updateUser }}>
+    <AuthContext.Provider value={{ currentUser, login, logout, signup, updateUser, loading }}>
       {children}
     </AuthContext.Provider>
   );
