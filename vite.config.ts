@@ -14,7 +14,9 @@ export default defineConfig(({ mode }) => {
         'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
         'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
         'process.env.STACK_SECRET_SERVER_KEY': JSON.stringify(env.STACK_SECRET_SERVER_KEY),
-        'process.env.DATABASE_URL': JSON.stringify(env.DATABASE_URL)
+        'process.env.DATABASE_URL': JSON.stringify(env.DATABASE_URL),
+        'process.env.VITE_STACK_PROJECT_ID': JSON.stringify(env.VITE_STACK_PROJECT_ID),
+        'process.env.VITE_STACK_PUBLISHABLE_CLIENT_KEY': JSON.stringify(env.VITE_STACK_PUBLISHABLE_CLIENT_KEY)
       },
       resolve: {
         alias: {

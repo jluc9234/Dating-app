@@ -6,6 +6,8 @@ import { AuthProvider } from './contexts/AuthContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { DateInteractionProvider } from './contexts/DateInteractionContext';
 import { MatchProvider } from './contexts/MatchContext';
+import { StackProvider } from '@stackframe/stack';
+import { stackClientApp } from './lib/stack';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -15,17 +17,18 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    {/* FIX: Corrected self-closing provider components. Providers must wrap their children to pass down context, so they are now correctly nested. */}
-    <AuthProvider>
-      <PremiumProvider>
-        <NotificationProvider>
-          <MatchProvider>
-            <DateInteractionProvider>
-              <App />
-            </DateInteractionProvider>
-          </MatchProvider>
-        </NotificationProvider>
-      </PremiumProvider>
-    </AuthProvider>
+    <StackProvider app={stackClientApp}>
+      <AuthProvider>
+        <PremiumProvider>
+          <NotificationProvider>
+            <MatchProvider>
+              <DateInteractionProvider>
+                <App />
+              </DateInteractionProvider>
+            </MatchProvider>
+          </NotificationProvider>
+        </PremiumProvider>
+      </AuthProvider>
+    </StackProvider>
   </React.StrictMode>
 );
