@@ -33,6 +33,7 @@ CREATE TABLE matches (
   interest_type TEXT NOT NULL,
   interest_expires_at TIMESTAMP WITH TIME ZONE,
   date_idea_id UUID REFERENCES date_ideas(id),
+  date_author_id UUID REFERENCES profiles(id),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -45,6 +46,11 @@ CREATE TABLE messages (
   timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Enable RLS (Row Level Security) if needed for security
--- ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
--- Add policies as per your security needs
+-- Create swipes table for mutual matching
+CREATE TABLE swipes (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  swiper_id UUID REFERENCES profiles(id),
+  swiped_id UUID REFERENCES profiles(id),
+  direction TEXT NOT NULL, -- 'right' or 'left'
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);

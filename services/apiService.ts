@@ -74,10 +74,19 @@ export const apiService = {
   async getUsersToSwipe(currentUserId: string): Promise<User[]> {
     const { data: authUser } = await supabase.auth.getUser();
     if (!authUser.user) return []; // Not authenticated
+    // First, get IDs of users already swiped on
+    const { data: swipedData, error: swipedError } = await supabase
+      .from('swipes')
+      .select('swiped_id')
+      .eq('swiper_id', currentUserId);
+    if (swipedError) throw swipedError;
+    const swipedIds = swipedData.map(s => s.swiped_id);
+
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
-      .neq('id', currentUserId);
+      .neq('id', currentUserId)
+      .not('id', 'in', `(${swipedIds.map(id => `'${id}'`).join(',')})`);
     if (error) throw error;
     return data as User[];
   },
@@ -128,7 +137,6 @@ export const apiService = {
       .from('matches')
       .insert({
         participants: [currentUserId, targetUserId],
-        messages: [],
         interest_type: 'swipe',
         interest_expires_at: null,
       });
@@ -140,7 +148,6 @@ export const apiService = {
       .from('matches')
       .insert({
         participants: [currentUserId, dateIdea.authorId],
-        messages: [],
         interest_type: 'date',
         interest_expires_at: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
         date_idea_id: dateIdea.id,
@@ -253,6 +260,30 @@ export const apiService = {
       budget: data.budget,
       dressCode: data.dress_code,
     } as DateIdea;
+  },
+
+  // --- SWIPES ---
+  async recordSwipe(swiperId: string, swipedId: string, direction: 'right' | 'left'): Promise<void> {
+    const { error } = await supabase
+      .from('swipes')
+      .insert({
+        swiper_id: swiperId,
+        swiped_id: swipedId,
+        direction,
+      });
+    if (error) throw error;
+  },
+
+  async checkMutual(currentUserId: string, targetUserId: string): Promise<boolean> {
+    const { data, error } = await supabase
+      .from('swipes')
+      .select('*')
+      .eq('swiper_id', targetUserId)
+      .eq('swiped_id', currentUserId)
+      .eq('direction', 'right')
+      .single();
+    if (error && error.code !== 'PGRST116') throw error; // PGRST116 is no rows
+    return !!data;
   },
 };
 

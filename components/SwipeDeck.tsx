@@ -32,28 +32,35 @@ const SwipeDeck: React.FC = () => {
         .map(user => ({
             ...user,
             // Generate a pseudo-random but stable match percentage for each user
-            matchPercentage: (user.id * 37 + (currentUser?.id || 0) * 29) % 41 + 60
+            matchPercentage: (user.id.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0) * 37 + (currentUser?.id.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0) || 0) * 29) % 41 + 60
         }))
   , [users, currentUser]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const handleSwipe = (direction: 'left' | 'right') => {
+  const handleSwipe = async (direction: 'left' | 'right') => {
     if (currentIndex >= swipeableUsers.length) return;
     
     const swipedUser = swipeableUsers[currentIndex];
     console.log(`Swiped ${direction} on ${swipedUser.name}`);
     
-    if (direction === 'right') {
-        // Simulate a random match
-        if (Math.random() < 0.4) { // 40% chance to match
-            addMatch(swipedUser);
+    try {
+      if (direction === 'right') {
+        await apiService.recordSwipe(currentUser!.id, swipedUser.id, 'right');
+        const isMutual = await apiService.checkMutual(currentUser!.id, swipedUser.id);
+        if (isMutual) {
+          addMatch(swipedUser);
         }
+      } else {
+        await apiService.recordSwipe(currentUser!.id, swipedUser.id, 'left');
+      }
+    } catch (error) {
+      console.error('Error recording swipe:', error);
     }
 
     // Animate out
     setTimeout(() => {
-        setCurrentIndex(prevIndex => prevIndex + 1);
+      setCurrentIndex(prevIndex => prevIndex + 1);
     }, 300); // Wait for animation
   };
   
