@@ -121,9 +121,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ match: initialMatch, onBack, on
                     {messages.map((msg, index) => {
                         const isSent = msg.senderId === currentUser?.id;
                         return (
-                            <div key={msg.id} className={`flex ${isSent ? 'self-end' : 'self-start'}`}>
-                                <div className={`max-w-xs md:max-w-md px-4 py-2 rounded-2xl ${isSent ? 'bg-purple-500 rounded-br-none text-white' : 'bg-slate-600 rounded-bl-none text-white'}`}>
-                                    <p>{msg.text}</p>
+                            <div key={msg.id} className="w-full flex mb-4">
+                                <div className={`w-full flex ${isSent ? 'justify-end' : 'justify-start'}`}>
+                                    <div className={`max-w-xs md:max-w-md px-4 py-2 rounded-2xl ${isSent ? 'bg-purple-500 rounded-br-none text-white text-right' : 'bg-slate-600 rounded-bl-none text-white'}`}>
+                                        <p>{msg.text}</p>
+                                    </div>
                                 </div>
                             </div>
                         );
