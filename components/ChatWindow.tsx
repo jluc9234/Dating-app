@@ -119,12 +119,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ match: initialMatch, onBack, on
             <div className="flex-grow p-4 overflow-y-auto flex flex-col">
                 <div className="space-y-4 mt-auto">
                     {messages.map((msg, index) => {
-                        const textColors = ['text-white', 'text-yellow-300', 'text-cyan-300'];
-                        const textColor = textColors[index % textColors.length];
                         const isSent = msg.senderId === currentUser?.id;
                         return (
                             <div key={msg.id} className={`flex items-end ${isSent ? 'justify-end' : 'justify-start'}`}>
-                                <div className={`max-w-xs md:max-w-md px-4 py-2 rounded-2xl ${isSent ? 'bg-purple-500 rounded-br-none' : 'bg-slate-600 rounded-bl-none'} ${textColor}`}>
+                                <div className={`max-w-xs md:max-w-md px-4 py-2 rounded-2xl ${isSent ? 'bg-purple-500 rounded-br-none text-white' : 'bg-slate-600 rounded-bl-none text-white'}`}>
                                     <p>{msg.text}</p>
                                 </div>
                             </div>
