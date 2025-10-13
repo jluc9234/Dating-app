@@ -9,39 +9,46 @@ export const apiService = {
       password: pass,
     });
     if (error) throw error;
-    // Fetch profile
-    const { data: profile, error: profileError } = await supabase
+    // Fetch or create profile
+    let { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', data.user!.id)
       .single();
-    if (profileError) throw profileError;
+    if (profileError && profileError.code === 'PGRST116') { // No rows
+      // Create profile
+      const { data: newProfile, error: insertError } = await supabase
+        .from('profiles')
+        .insert({
+          id: data.user!.id,
+          name: data.user!.user_metadata?.name || 'User',
+          email: data.user!.email!,
+          age: 18,
+          bio: '',
+          images: [`https://picsum.photos/seed/${data.user!.id}/800/1200`],
+          interests: [],
+          is_premium: false,
+        })
+        .select()
+        .single();
+      if (insertError) throw insertError;
+      profile = newProfile;
+    } else if (profileError) throw profileError;
     return profile as User;
   },
 
-  async signup(name: string, email: string, pass: string): Promise<User> {
+  async signup(name: string, email: string, pass: string): Promise<void> {
     const { data, error } = await supabase.auth.signUp({
       email,
       password: pass,
+      options: {
+        data: {
+          name,
+        },
+      },
     });
     if (error) throw error;
-    // Insert profile
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .insert({
-        id: data.user!.id,
-        name,
-        email,
-        age: 18,
-        bio: '',
-        images: [`https://picsum.photos/seed/${data.user!.id}/800/1200`],
-        interests: [],
-        is_premium: false,
-      })
-      .select()
-      .single();
-    if (profileError) throw profileError;
-    return profile as User;
+    // Profile will be created on first login after email confirmation
   },
 
   async updateUser(updatedUser: User): Promise<User> {

@@ -32,9 +32,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signup = async (name: string, email: string, pass: string) => {
-    const newUser = await apiService.signup(name, email, pass);
-    setCurrentUser(newUser);
-    window.localStorage.setItem('currentUser', JSON.stringify(newUser));
+    await apiService.signup(name, email, pass);
+    // User will need to confirm email, then login
   };
 
   const logout = async () => {
