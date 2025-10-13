@@ -118,13 +118,17 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ match: initialMatch, onBack, on
             {/* Messages */}
             <div className="flex-grow p-4 overflow-y-auto flex flex-col">
                 <div className="space-y-4 mt-auto">
-                    {messages.map((msg) => (
-                        <div key={msg.id} className={`flex items-end ${msg.senderId === currentUser?.id ? 'justify-end' : 'justify-start'}`}>
-                            <div className={`max-w-xs md:max-w-md px-4 py-2 rounded-2xl ${msg.senderId === currentUser?.id ? 'bg-pink-600 text-white rounded-br-none' : 'bg-slate-700 text-slate-200 rounded-bl-none'}`}>
-                                <p>{msg.text}</p>
+                    {messages.map((msg, index) => {
+                        const textColors = ['text-white', 'text-yellow-300', 'text-cyan-300'];
+                        const textColor = textColors[index % textColors.length];
+                        return (
+                            <div key={msg.id} className={`flex items-end ${msg.senderId === currentUser?.id ? 'justify-end' : 'justify-start'}`}>
+                                <div className={`max-w-xs md:max-w-md px-4 py-2 rounded-2xl ${msg.senderId === currentUser?.id ? 'bg-purple-500 rounded-br-none' : 'bg-slate-600 rounded-bl-none'} ${textColor}`}>
+                                    <p>{msg.text}</p>
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                     <div ref={endOfMessagesRef} />
                 </div>
             </div>
