@@ -1,13 +1,13 @@
 import React, { createContext, useState, useContext, ReactNode } from 'react';
 import { User } from '../types';
-import { apiService } from '../services/apiService';
+import { apiService, logout as apiLogout } from '../services/apiService';
 
 interface AuthContextType {
   currentUser: User | null;
   login: (email: string, pass: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   signup: (name: string, email: string, pass: string) => Promise<void>;
-  updateUser: (updatedUser: User) => void;
+  updateUser: (updatedUser: User) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -37,7 +37,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     window.localStorage.setItem('currentUser', JSON.stringify(newUser));
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await apiLogout();
     setCurrentUser(null);
     window.localStorage.removeItem('currentUser');
   };
