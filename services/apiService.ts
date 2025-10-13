@@ -72,6 +72,8 @@ export const apiService = {
 
   // --- SWIPING ---
   async getUsersToSwipe(currentUserId: string): Promise<User[]> {
+    const { data: authUser } = await supabase.auth.getUser();
+    if (!authUser.user) return []; // Not authenticated
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
@@ -82,6 +84,8 @@ export const apiService = {
   
   // --- MATCHES & CHAT ---
   async getMatches(currentUserId: string): Promise<Match[]> {
+    const { data: authUser } = await supabase.auth.getUser();
+    if (!authUser.user) return []; // Not authenticated
     const { data: matches, error } = await supabase
       .from('matches')
       .select('*')
@@ -186,6 +190,8 @@ export const apiService = {
 
   // --- DATES ---
   async getDateIdeas(): Promise<DateIdea[]> {
+    const { data: authUser } = await supabase.auth.getUser();
+    if (!authUser.user) return []; // Not authenticated
     const { data, error } = await supabase
       .from('date_ideas')
       .select(`
@@ -252,9 +258,9 @@ export const apiService = {
 
 // Additional helper functions
 export const getCurrentUser = async (): Promise<User | null> => {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
-  const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single();
+  const { data: authUser } = await supabase.auth.getUser();
+  if (!authUser.user) return null;
+  const { data: profile } = await supabase.from('profiles').select('*').eq('id', authUser.user.id).single();
   return profile as User;
 };
 
