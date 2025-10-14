@@ -4,6 +4,7 @@ import { usePremium } from '../contexts/PremiumContext';
 import { User } from '../types';
 import { SparklesIcon, getRandomGradient } from '../constants';
 import { enhanceBio, generateBackgroundImage } from '../services/geminiService';
+import LocationSettings from './LocationSettings';
 
 interface ProfileScreenProps {
     onPremiumClick: () => void;
@@ -275,6 +276,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ onPremiumClick }) => {
                 >
                     Log Out
                 </button>
+
+                <LocationSettings />
             </div>
         </div>
     );

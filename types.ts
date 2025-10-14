@@ -26,6 +26,8 @@ export interface User {
   interests: string[];
   background?: string; // Can be a data URL for uploaded/generated images
   isPremium: boolean;
+  location?: string;
+  maxDistance?: number; // in miles/kilometers
 }
 
 export interface DateIdea {
@@ -36,11 +38,16 @@ export interface DateIdea {
   authorId: string;
   authorName: string;
   authorImage: string;
-  location?: string;
+  location: string;
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  };
   date?: string; // ISO string for the date
   isOutOfTown?: boolean;
   budget?: BudgetOption;
   dressCode?: DressCodeOption;
+  distance?: number; // in miles/kilometers from user's location
 }
 
 export interface Message {

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { DateIdea, DateCategory } from '../types';
 import DateCard from './DateCard';
 import { DATE_CATEGORIES, getRandomGradient } from '../constants';
+import { useLocation } from '../contexts/LocationContext';
+import { calculateDistance } from '../utils/locationUtils';
 
 interface DateMarketplaceProps {
   onCreateDate: () => void;
@@ -10,12 +12,39 @@ interface DateMarketplaceProps {
 }
 
 const DateMarketplace: React.FC<DateMarketplaceProps> = ({ onCreateDate, dateIdeas, isLoading }) => {
+  const { userLocation, maxDistance } = useLocation();
   const [selectedCategory, setSelectedCategory] = useState<DateCategory | 'All'>('All');
   const [buttonGradient, setButtonGradient] = useState(() => getRandomGradient());
 
-  const filteredIdeas = selectedCategory === 'All'
+  // Filter dates by category first
+  const categoryFilteredIdeas = selectedCategory === 'All'
     ? dateIdeas
     : dateIdeas.filter(idea => idea.category === selectedCategory);
+
+  // Then filter by location and distance
+  const locationFilteredIdeas = categoryFilteredIdeas.filter(idea => {
+    // If no user location set, show all
+    if (!userLocation.coordinates) return true;
+
+    // If idea has coordinates, calculate distance
+    if (idea.coordinates) {
+      const distance = calculateDistance(
+        userLocation.coordinates.latitude,
+        userLocation.coordinates.longitude,
+        idea.coordinates.latitude,
+        idea.coordinates.longitude
+      );
+      
+      // Add distance to the idea for display
+      idea.distance = distance;
+      
+      // Filter by max distance if set
+      return !maxDistance || distance <= maxDistance;
+    }
+
+    // If no coordinates for the idea, include it
+    return true;
+  });
 
   const handleCreateClick = () => {
     onCreateDate();
@@ -53,6 +82,15 @@ const DateMarketplace: React.FC<DateMarketplaceProps> = ({ onCreateDate, dateIde
           </button>
         ))}
       </div>
+
+      {/* Location filter indicator */}
+      {userLocation.coordinates && (
+        <div className="mb-4 p-3 bg-slate-800/50 rounded-lg">
+          <p className="text-sm text-slate-300">
+            📍 Showing dates within {maxDistance || 'any distance'} of {userLocation.address}
+          </p>
+        </div>
+      )}
       
       {isLoading ? (
          <div className="flex items-center justify-center h-40">
@@ -63,13 +101,17 @@ const DateMarketplace: React.FC<DateMarketplaceProps> = ({ onCreateDate, dateIde
         </div>
       ) : (
         <div className="space-y-4">
-            {filteredIdeas.length > 0 ? (
-                filteredIdeas.map(idea => (
+            {locationFilteredIdeas.length > 0 ? (
+                locationFilteredIdeas.map(idea => (
                     <DateCard key={idea.id} dateIdea={idea} />
                 ))
             ) : (
                 <div className="text-center py-10">
-                    <p className="text-slate-400">No date ideas in this category yet!</p>
+                    <p className="text-slate-400">
+                        {categoryFilteredIdeas.length === 0 
+                          ? "No date ideas in this category yet!" 
+                          : "No date ideas match your location preferences!"}
+                    </p>
                 </div>
             )}
         </div>

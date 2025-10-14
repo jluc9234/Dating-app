@@ -46,6 +46,9 @@ const DateCard: React.FC<DateCardProps> = ({ dateIdea }) => {
           <div className="flex items-center gap-2 text-xs text-slate-400 mb-3">
             <MapPinIcon className="w-4 h-4" />
             <span>{dateIdea.location}</span>
+            {dateIdea.distance && (
+              <span className="text-cyan-400 font-medium">• {dateIdea.distance.toFixed(1)} miles</span>
+            )}
           </div>
         )}
 
