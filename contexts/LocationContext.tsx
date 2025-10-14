@@ -65,28 +65,8 @@ export const LocationProvider: React.FC<{ children: ReactNode }> = ({ children }
     }
   }, [maxDistance]);
 
-  const updateUserLocation = async (address: string) => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      // In a real app, you would geocode the address here
-      // For now, we'll just use the current location
-      const position = await getCurrentLocation();
-      
-      setUserLocation({
-        coordinates: {
-          latitude: position.latitude,
-          longitude: position.longitude
-        },
-        address
-      });
-    } catch (err) {
-      console.error('Error updating location:', err);
-      setError('Could not determine your location. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+  const updateUserLocation = (location: { coordinates: { latitude: number; longitude: number }; address: string }) => {
+    setUserLocation(location);
   };
 
   return (
