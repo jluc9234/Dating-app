@@ -86,7 +86,9 @@ export const apiService = {
       .from('profiles')
       .select('*')
       .neq('id', currentUserId)
-      .not('id', 'in', `(${swipedIds.map(id => `'${id}'`).join(',')})`);
+      .not('id', 'in', `(${swipedIds.map(id => `'${id}'`).join(',')})`)
+      .order('RANDOM()') // Randomize the order
+      .limit(10); // Limit to 10 for pagination
     if (error) throw error;
     return data as User[];
   },

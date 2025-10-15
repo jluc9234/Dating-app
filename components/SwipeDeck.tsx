@@ -18,6 +18,7 @@ const SwipeDeck: React.FC = () => {
           try {
               const usersToSwipe = await apiService.getUsersToSwipe(currentUser.id);
               setUsers(usersToSwipe);
+              setCurrentIndex(0); // Reset index when new users are fetched
           } catch (error) {
               console.error("Failed to fetch users", error);
           } finally {
@@ -76,9 +77,39 @@ const SwipeDeck: React.FC = () => {
   }
 
   if (currentIndex >= swipeableUsers.length) {
+    // Automatically refetch new users when list is empty
+    if (!isLoading) {
+      const fetchMoreUsers = async () => {
+        setIsLoading(true);
+        try {
+          const newUsers = await apiService.getUsersToSwipe(currentUser!.id);
+          if (newUsers.length > 0) {
+            setUsers(newUsers);
+            setCurrentIndex(0);
+          } else {
+            // If no new users, show message for a short time then try again
+            setTimeout(() => {
+              fetchMoreUsers();
+            }, 3000);
+          }
+        } catch (error) {
+          console.error("Failed to fetch more users", error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchMoreUsers();
+    }
+
     return (
-        <div className="flex items-center justify-center h-full text-white text-xl p-8 text-center">
-            <p>No more profiles to show right now. Check back later!</p>
+        <div className="flex items-center justify-center h-full text-white">
+            <div className="text-center">
+                <svg className="animate-spin h-8 w-8 text-pink-500 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p>Finding more profiles...</p>
+            </div>
         </div>
     );
   }
