@@ -63,12 +63,12 @@ const LocationSettings: React.FC = () => {
   };
 
   return (
-    <div className="p-4 max-w-md mx-auto">
-      <h2 className="text-xl font-bold text-white mb-4">Location Settings</h2>
+    <div className="bg-slate-800/50 backdrop-blur-xl border border-slate-700 rounded-2xl p-6 mb-6">
+      <h2 className="font-bold text-lg mb-4">Location Settings</h2>
       
       <form onSubmit={handleSave} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-slate-300 mb-1">
             Your Location
           </label>
           <div className="flex space-x-2">
@@ -77,14 +77,14 @@ const LocationSettings: React.FC = () => {
               value={address}
               onChange={(e) => setAddress(e.target.value)}
               placeholder="Enter your address or city"
-              className="flex-1 px-4 py-2 bg-gray-800 border border-gray-700 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 px-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-pink-500"
               disabled={loading}
             />
             <button
               type="button"
               onClick={handleDetectLocation}
               disabled={loading}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
               title="Use my current location"
             >
               📍
@@ -93,7 +93,7 @@ const LocationSettings: React.FC = () => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-slate-300 mb-1">
             Maximum Distance (miles)
           </label>
           <input
@@ -102,17 +102,17 @@ const LocationSettings: React.FC = () => {
             max="500"
             value={localMaxDistance}
             onChange={(e) => setLocalMaxDistance(e.target.value)}
-            className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-md text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-pink-500"
             placeholder="No limit"
             disabled={loading}
           />
-          <p className="mt-1 text-xs text-gray-400">
+          <p className="mt-1 text-xs text-slate-400">
             Set to 0 or leave empty for no distance limit
           </p>
         </div>
 
         {error && (
-          <div className="p-2 text-red-500 text-sm bg-red-900/30 rounded">
+          <div className="p-2 text-red-400 text-sm bg-red-900/30 rounded-lg">
             {error}
           </div>
         )}
@@ -120,7 +120,7 @@ const LocationSettings: React.FC = () => {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-2 px-4 bg-green-600 hover:bg-green-700 text-white font-medium rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full py-2 px-4 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? 'Saving...' : 'Save Location Settings'}
         </button>

@@ -28,6 +28,8 @@ export interface User {
   isPremium: boolean;
   location?: string;
   maxDistance?: number; // in miles/kilometers
+  prompts?: string[]; // Icebreaker prompts
+  isVerified?: boolean; // Profile verification status
 }
 
 export interface DateIdea {
@@ -80,7 +82,7 @@ export interface MatchData {
 }
 
 
-export type ActiveView = 'swipe' | 'dates' | 'matches' | 'profile';
+export type ActiveView = 'swipe' | 'dates' | 'matches' | 'profile' | 'stories';
 
 export type NotificationType = 'match' | 'interest' | 'info';
 

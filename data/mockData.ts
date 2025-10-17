@@ -18,8 +18,9 @@ export const MOCK_USERS: User[] = [
         'https://picsum.photos/seed/user1f/800/1200',
     ],
     interests: ['Hiking', 'Painting', 'Indie Music', 'Travel'],
-    // FIX: Added missing isPremium property to conform to User type.
     isPremium: true,
+    prompts: ['What\'s your idea of a perfect weekend?', 'If you could have dinner with any historical figure, who would it be?'],
+    isVerified: true,
   },
   {
     id: '2',
@@ -34,8 +35,9 @@ export const MOCK_USERS: User[] = [
         'https://picsum.photos/seed/user2b/800/1200'
     ],
     interests: ['Guitar', 'Cooking', 'Sci-Fi Movies', 'Craft Beer'],
-    // FIX: Added missing isPremium property to conform to User type.
     isPremium: false,
+    prompts: ['What\'s the most spontaneous thing you\'ve ever done?', 'What\'s your favorite way to unwind after a long day?'],
+    isVerified: false,
   },
   {
     id: '3',
@@ -50,8 +52,9 @@ export const MOCK_USERS: User[] = [
         'https://picsum.photos/seed/user3c/800/1200',
     ],
     interests: ['Yoga', 'Weightlifting', 'Brunch', 'Dogs'],
-    // FIX: Added missing isPremium property to conform to User type.
     isPremium: false,
+    prompts: ['What\'s your go-to workout playlist?', 'If you could teleport anywhere right now, where would you go?'],
+    isVerified: true,
   },
   {
     id: '4',
@@ -66,8 +69,9 @@ export const MOCK_USERS: User[] = [
         'https://picsum.photos/seed/user4b/800/1200',
     ],
     interests: ['Dogs', 'Comedy', 'Cooking', 'Podcasts'],
-    // FIX: Added missing isPremium property to conform to User type.
     isPremium: false,
+    prompts: ['What\'s the best dad joke you know?', 'What\'s your favorite podcast and why?'],
+    isVerified: false,
   }
 ];
 

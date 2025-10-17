@@ -16,6 +16,14 @@ const DateMarketplace: React.FC<DateMarketplaceProps> = ({ onCreateDate, dateIde
   const [selectedCategory, setSelectedCategory] = useState<DateCategory | 'All'>('All');
   const [searchLocation, setSearchLocation] = useState('');
   const [buttonGradient, setButtonGradient] = useState(() => getRandomGradient());
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    minAge: 18,
+    maxAge: 100,
+    interests: [] as string[],
+    budget: '' as string,
+    dressCode: '' as string,
+  });
 
   // Predefined city coordinates for demo
   const cityCoordinates: { [key: string]: { latitude: number; longitude: number; address: string } } = {
@@ -31,8 +39,26 @@ const DateMarketplace: React.FC<DateMarketplaceProps> = ({ onCreateDate, dateIde
     ? dateIdeas
     : dateIdeas.filter(idea => idea.category === selectedCategory);
 
+  // Then apply advanced filters
+  const filteredIdeas = categoryFilteredIdeas.filter(idea => {
+    // Age filter (mock: assume author age from name or add to data)
+    const authorAge = 25; // Placeholder; in real app, add age to DateIdea
+    if (authorAge < filters.minAge || authorAge > filters.maxAge) return false;
+
+    // Interests filter
+    if (filters.interests.length > 0 && !filters.interests.some(interest => idea.interests?.includes(interest))) return false;
+
+    // Budget filter
+    if (filters.budget && idea.budget !== filters.budget) return false;
+
+    // Dress code filter
+    if (filters.dressCode && idea.dressCode !== filters.dressCode) return false;
+
+    return true;
+  });
+
   // Then filter by location and distance
-  const locationFilteredIdeas = categoryFilteredIdeas.filter(idea => {
+  const locationFilteredIdeas = filteredIdeas.filter(idea => {
     // Determine the search coordinates
     let searchCoords = null;
     if (searchLocation && cityCoordinates[searchLocation]) {
@@ -82,13 +108,97 @@ const DateMarketplace: React.FC<DateMarketplaceProps> = ({ onCreateDate, dateIde
           onChange={(e) => setSearchLocation(e.target.value)}
           className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-pink-500 mb-4"
         />
-        <button 
-          onClick={handleCreateClick} 
-          className={`w-full bg-gradient-to-r ${buttonGradient} text-white font-bold py-3 rounded-xl shadow-lg hover:shadow-purple-500/50 transform hover:-translate-y-1 transition-all duration-300`}
-        >
-          Create-A-Date
-        </button>
+        <div className="flex space-x-2 mb-4">
+          <button 
+            onClick={() => setShowFilters(!showFilters)} 
+            className="bg-slate-700 text-white font-semibold px-4 py-2 rounded-lg hover:bg-slate-600 transition-colors"
+          >
+            Filters
+          </button>
+          <button 
+            onClick={handleCreateClick} 
+            className={`bg-gradient-to-r ${buttonGradient} text-white font-bold py-2 px-4 rounded-lg shadow-lg hover:shadow-purple-500/50 transform hover:-translate-y-1 transition-all duration-300`}
+          >
+            Create-A-Date
+          </button>
+        </div>
       </div>
+
+      {showFilters && (
+        <div className="mb-6 p-4 bg-slate-800/50 rounded-lg">
+          <h3 className="text-lg font-bold mb-4">Filters</h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Age Range</label>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="number"
+                  placeholder="Min"
+                  value={filters.minAge}
+                  onChange={(e) => setFilters(prev => ({ ...prev, minAge: parseInt(e.target.value) || 18 }))}
+                  className="w-20 bg-slate-700 border border-slate-600 rounded px-2 py-1 text-white"
+                />
+                <span>to</span>
+                <input
+                  type="number"
+                  placeholder="Max"
+                  value={filters.maxAge}
+                  onChange={(e) => setFilters(prev => ({ ...prev, maxAge: parseInt(e.target.value) || 100 }))}
+                  className="w-20 bg-slate-700 border border-slate-600 rounded px-2 py-1 text-white"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Interests</label>
+              <div className="flex flex-wrap gap-2">
+                {['Hiking', 'Painting', 'Music', 'Cooking', 'Travel'].map(interest => (
+                  <label key={interest} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={filters.interests.includes(interest)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setFilters(prev => ({ ...prev, interests: [...prev.interests, interest] }));
+                        } else {
+                          setFilters(prev => ({ ...prev, interests: prev.interests.filter(i => i !== interest) }));
+                        }
+                      }}
+                      className="mr-2"
+                    />
+                    {interest}
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Budget</label>
+              <select
+                value={filters.budget}
+                onChange={(e) => setFilters(prev => ({ ...prev, budget: e.target.value }))}
+                className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 text-white"
+              >
+                <option value="">Any</option>
+                <option value="$">$</option>
+                <option value="$$">$$</option>
+                <option value="$$$">$$$</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Dress Code</label>
+              <select
+                value={filters.dressCode}
+                onChange={(e) => setFilters(prev => ({ ...prev, dressCode: e.target.value }))}
+                className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 text-white"
+              >
+                <option value="">Any</option>
+                <option value="Casual">Casual</option>
+                <option value="Smart Casual">Smart Casual</option>
+                <option value="Formal">Formal</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="flex overflow-x-auto space-x-3 pb-4 mb-6 scrollbar-hide">
         <button 

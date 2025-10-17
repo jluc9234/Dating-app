@@ -13,6 +13,7 @@ import BottomNav from './components/BottomNav';
 import SwipeDeck from './components/SwipeDeck';
 import DateMarketplace from './components/DateMarketplace';
 import CreateDate from './components/CreateDate';
+import Stories from './components/Stories';
 import Matches from './components/Matches';
 import ChatWindow from './components/ChatWindow';
 import ProfileScreen from './components/ProfileScreen';
@@ -75,6 +76,8 @@ const App: React.FC = () => {
                 return <Matches onSelectMatch={setSelectedMatch} />;
             case 'profile':
                 return <ProfileScreen onPremiumClick={() => setMonetizationModalOpen(true)} />;
+            case 'stories':
+                return <Stories />;
             default:
                 return <SwipeDeck />;
         }

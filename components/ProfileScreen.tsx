@@ -13,7 +13,7 @@ interface ProfileScreenProps {
 const ProfileScreen: React.FC<ProfileScreenProps> = ({ onPremiumClick }) => {
     const { currentUser, logout, updateUser } = useAuth();
     const { isPremium } = usePremium();
-    const [user, setUser] = useState<User>(currentUser!);
+    const [user, setUser] = useState<User | null>(currentUser);
     const [isEditing, setIsEditing] = useState(false);
     const [isEnhancing, setIsEnhancing] = useState(false);
     
@@ -26,9 +26,11 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ onPremiumClick }) => {
     const [editSaveGradient, setEditSaveGradient] = useState(() => getRandomGradient());
     const [logoutGradient, setLogoutGradient] = useState(() => getRandomGradient());
 
-    useEffect(() => {
-        setUser(currentUser!);
-    }, [currentUser]);
+    const [privacySettings, setPrivacySettings] = useState({
+        hideFromExes: false,
+        blockUnverified: false,
+        showOnlineStatus: true,
+    });
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -122,7 +124,13 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ onPremiumClick }) => {
     };
 
 
-    if (!currentUser) return null;
+    if (!user) {
+        return (
+            <div className="px-4 text-white h-full flex items-center justify-center">
+                <p>Please log in to view your profile.</p>
+            </div>
+        );
+    }
 
     const photoGrid = Array(6).fill(null).map((_, i) => user.images[i] || null);
 
@@ -201,6 +209,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ onPremiumClick }) => {
                      </div>
                 </div>
 
+                <LocationSettings />
+
                 <div className="bg-slate-800/50 backdrop-blur-xl border border-slate-700 rounded-2xl p-6 mb-6">
                     <h2 className="font-bold text-lg mb-2">Interests</h2>
                     {isEditing ? (
@@ -260,6 +270,39 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ onPremiumClick }) => {
                     </div>
                 </div>
 
+                <div className="bg-slate-800/50 backdrop-blur-xl border border-slate-700 rounded-2xl p-6 mb-6">
+                    <h2 className="font-bold text-lg mb-4">Privacy Settings</h2>
+                    <div className="space-y-4">
+                        <label className="flex items-center justify-between">
+                            <span className="text-sm">Hide from ex-partners</span>
+                            <input
+                                type="checkbox"
+                                checked={privacySettings.hideFromExes}
+                                onChange={(e) => setPrivacySettings(prev => ({ ...prev, hideFromExes: e.target.checked }))}
+                                className="rounded"
+                            />
+                        </label>
+                        <label className="flex items-center justify-between">
+                            <span className="text-sm">Only show to verified users</span>
+                            <input
+                                type="checkbox"
+                                checked={privacySettings.blockUnverified}
+                                onChange={(e) => setPrivacySettings(prev => ({ ...prev, blockUnverified: e.target.checked }))}
+                                className="rounded"
+                            />
+                        </label>
+                        <label className="flex items-center justify-between">
+                            <span className="text-sm">Show online status</span>
+                            <input
+                                type="checkbox"
+                                checked={privacySettings.showOnlineStatus}
+                                onChange={(e) => setPrivacySettings(prev => ({ ...prev, showOnlineStatus: e.target.checked }))}
+                                className="rounded"
+                            />
+                        </label>
+                    </div>
+                </div>
+
                 {isEditing ? (
                     <button onClick={() => { handleSave(); setEditSaveGradient(getRandomGradient()); }} className={`w-full bg-gradient-to-r ${editSaveGradient} text-white font-bold py-3 rounded-xl shadow-lg hover:shadow-emerald-500/50 transform hover:-translate-y-1 transition-all duration-300 mb-4`}>
                         Save Changes
@@ -276,8 +319,6 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ onPremiumClick }) => {
                 >
                     Log Out
                 </button>
-
-                <LocationSettings />
             </div>
         </div>
     );
