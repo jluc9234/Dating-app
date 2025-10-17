@@ -1,77 +1,10 @@
 import { User, DateIdea, Match, Message, DateCategory, MatchData } from '../types';
 import { supabase } from './supabaseClient';
+import { MOCK_USERS } from '../data/mockData';
 
 export const apiService = {
-  // --- AUTH ---
-  async login(email: string, pass: string): Promise<User | null> {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password: pass,
-    });
-    if (error) throw error;
-    // Fetch or create profile
-    let { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', data.user!.id)
-      .single();
-    if (profileError && profileError.code === 'PGRST116') { // No rows
-      // Create profile
-      const { data: newProfile, error: insertError } = await supabase
-        .from('profiles')
-        .insert({
-          id: data.user!.id,
-          name: data.user!.user_metadata?.name || 'User',
-          email: data.user!.email!,
-          age: 18,
-          bio: '',
-          images: [`https://picsum.photos/seed/${data.user!.id}/800/1200`],
-          interests: [],
-          is_premium: false,
-        })
-        .select()
-        .single();
-      if (insertError) throw insertError;
-      profile = newProfile;
-    } else if (profileError) throw profileError;
-    return profile as User;
-  },
-
-  async signup(name: string, email: string, pass: string): Promise<void> {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password: pass,
-      options: {
-        data: {
-          name,
-        },
-      },
-    });
-    if (error) throw error;
-    // Profile will be created on first login after email confirmation
-  },
-
-  async updateUser(updatedUser: User): Promise<User> {
-    const { data, error } = await supabase
-      .from('profiles')
-      .update({
-        name: updatedUser.name,
-        age: updatedUser.age,
-        bio: updatedUser.bio,
-        images: updatedUser.images,
-        interests: updatedUser.interests,
-        is_premium: updatedUser.isPremium,
-        phone: updatedUser.phone,
-      })
-      .eq('id', updatedUser.id)
-      .select()
-      .single();
-    if (error) throw error;
-    return data as User;
-  },
-
   // --- SWIPING ---
-  async getUsersToSwipe(currentUserId: string): Promise<User[]> {
+  getUsersToSwipe: async (currentUserId: string): Promise<User[]> => {
     const { data: authUser } = await supabase.auth.getUser();
     if (!authUser.user) return []; // Not authenticated
     // First, get IDs of users already swiped on
@@ -92,8 +25,6 @@ export const apiService = {
     if (error) throw error;
     return data as User[];
   },
-  
-  // --- MATCHES & CHAT ---
   async getMatches(currentUserId: string): Promise<Match[]> {
     const { data: authUser } = await supabase.auth.getUser();
     if (!authUser.user) return []; // Not authenticated
@@ -122,7 +53,12 @@ export const apiService = {
       return {
         id: matchData.id,
         user: otherUser as User,
-        messages: messages as Message[],
+        messages: messages.map(msg => ({
+          id: msg.id,
+          senderId: msg.sender_id,
+          text: msg.text,
+          timestamp: msg.timestamp,
+        })) as Message[],
         interestType: matchData.interest_type,
         interestExpiresAt: matchData.interest_expires_at,
         dateIdeaId: matchData.date_idea_id,
@@ -194,7 +130,13 @@ export const apiService = {
       .select()
       .single();
     if (msgError) throw msgError;
-    return message as Message;
+    // Map database fields to interface fields
+    return {
+      id: message.id,
+      senderId: message.sender_id,
+      text: message.text,
+      timestamp: message.timestamp,
+    } as Message;
   },
 
   // --- DATES ---

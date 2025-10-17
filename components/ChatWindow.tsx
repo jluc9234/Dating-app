@@ -119,19 +119,17 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ match: initialMatch, onBack, on
             <div className="flex-grow p-4 overflow-y-auto flex flex-col">
                 <div className="space-y-4 mt-auto">
                     {messages.map((msg, index) => {
-                        const textColors = ['text-white', 'text-yellow-300', 'text-cyan-300'];
-                        const textColor = textColors[index % textColors.length];
                         const isSent = msg.senderId === currentUser?.id;
                         return (
                             <div key={msg.id} className={`flex items-end ${isSent ? 'justify-end' : 'justify-start'}`}>
                                 {!isSent && (
-                                    <img src={match.user.images[0]} alt={match.user.name} className="w-8 h-8 rounded-full object-cover mr-2" />
+                                    <img src={match.user.images[0]} alt={match.user.name} className="w-8 h-8 rounded-full object-cover mr-2 flex-shrink-0" />
                                 )}
-                                <div className={`max-w-xs md:max-w-md px-4 py-2 rounded-2xl ${isSent ? 'bg-purple-500 rounded-br-none' : 'bg-slate-600 rounded-bl-none'} ${textColor} ${isSent ? 'text-right' : 'text-left'}`}>
-                                    <p>{msg.text}</p>
+                                <div className={`max-w-xs md:max-w-md px-4 py-2 rounded-2xl ${isSent ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white' : 'bg-slate-700 text-white'} ${isSent ? 'rounded-br-md' : 'rounded-bl-md'}`}>
+                                    <p className="text-sm">{msg.text}</p>
                                 </div>
                                 {isSent && (
-                                    <img src={currentUser?.images[0]} alt={currentUser?.name} className="w-8 h-8 rounded-full object-cover ml-2" />
+                                    <img src={currentUser?.images[0]} alt={currentUser?.name} className="w-8 h-8 rounded-full object-cover ml-2 flex-shrink-0" />
                                 )}
                             </div>
                         );

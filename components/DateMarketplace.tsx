@@ -14,7 +14,17 @@ interface DateMarketplaceProps {
 const DateMarketplace: React.FC<DateMarketplaceProps> = ({ onCreateDate, dateIdeas, isLoading }) => {
   const { userLocation, maxDistance } = useLocation();
   const [selectedCategory, setSelectedCategory] = useState<DateCategory | 'All'>('All');
+  const [searchLocation, setSearchLocation] = useState('');
   const [buttonGradient, setButtonGradient] = useState(() => getRandomGradient());
+
+  // Predefined city coordinates for demo
+  const cityCoordinates: { [key: string]: { latitude: number; longitude: number; address: string } } = {
+    'Los Angeles': { latitude: 34.0522, longitude: -118.2437, address: 'Los Angeles, CA' },
+    'San Francisco': { latitude: 37.7749, longitude: -122.4194, address: 'San Francisco, CA' },
+    'New York': { latitude: 40.7128, longitude: -74.0060, address: 'New York, NY' },
+    'Chicago': { latitude: 41.8781, longitude: -87.6298, address: 'Chicago, IL' },
+    'Miami': { latitude: 25.7617, longitude: -80.1918, address: 'Miami, FL' },
+  };
 
   // Filter dates by category first
   const categoryFilteredIdeas = selectedCategory === 'All'
@@ -23,14 +33,22 @@ const DateMarketplace: React.FC<DateMarketplaceProps> = ({ onCreateDate, dateIde
 
   // Then filter by location and distance
   const locationFilteredIdeas = categoryFilteredIdeas.filter(idea => {
-    // If no user location set, show all
-    if (!userLocation.coordinates) return true;
+    // Determine the search coordinates
+    let searchCoords = null;
+    if (searchLocation && cityCoordinates[searchLocation]) {
+      searchCoords = cityCoordinates[searchLocation];
+    } else if (userLocation.coordinates) {
+      searchCoords = userLocation.coordinates;
+    }
+
+    // If no search or user location, show all
+    if (!searchCoords) return true;
 
     // If idea has coordinates, calculate distance
     if (idea.coordinates) {
       const distance = calculateDistance(
-        userLocation.coordinates.latitude,
-        userLocation.coordinates.longitude,
+        searchCoords.latitude,
+        searchCoords.longitude,
         idea.coordinates.latitude,
         idea.coordinates.longitude
       );
@@ -57,6 +75,13 @@ const DateMarketplace: React.FC<DateMarketplaceProps> = ({ onCreateDate, dateIde
       <p className="text-slate-400 mb-6">Discover unique date ideas posted by others.</p>
 
       <div className="mb-6">
+        <input
+          type="text"
+          placeholder="Search for a city (e.g., Los Angeles)"
+          value={searchLocation}
+          onChange={(e) => setSearchLocation(e.target.value)}
+          className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-pink-500 mb-4"
+        />
         <button 
           onClick={handleCreateClick} 
           className={`w-full bg-gradient-to-r ${buttonGradient} text-white font-bold py-3 rounded-xl shadow-lg hover:shadow-purple-500/50 transform hover:-translate-y-1 transition-all duration-300`}
@@ -84,13 +109,13 @@ const DateMarketplace: React.FC<DateMarketplaceProps> = ({ onCreateDate, dateIde
       </div>
 
       {/* Location filter indicator */}
-      {userLocation.coordinates && (
+      {(searchLocation && cityCoordinates[searchLocation]) || userLocation.coordinates ? (
         <div className="mb-4 p-3 bg-slate-800/50 rounded-lg">
           <p className="text-sm text-slate-300">
-            📍 Showing dates within {maxDistance || 'any distance'} of {userLocation.address}
+            📍 Showing dates within {maxDistance || 'any distance'} of {searchLocation && cityCoordinates[searchLocation] ? cityCoordinates[searchLocation].address : userLocation.address}
           </p>
         </div>
-      )}
+      ) : null}
       
       {isLoading ? (
          <div className="flex items-center justify-center h-40">
@@ -100,7 +125,7 @@ const DateMarketplace: React.FC<DateMarketplaceProps> = ({ onCreateDate, dateIde
             </svg>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-2">
             {locationFilteredIdeas.length > 0 ? (
                 locationFilteredIdeas.map(idea => (
                     <DateCard key={idea.id} dateIdea={idea} />

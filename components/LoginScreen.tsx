@@ -73,19 +73,19 @@ const LoginScreen: React.FC = () => {
         <div className="bg-gradient-to-br from-slate-900 via-black to-purple-900 min-h-screen flex flex-col justify-center items-center p-4 text-white">
             <div className="w-full max-w-sm">
                 <div className="text-center mb-10">
-                    <h1 className="text-4xl font-extrabold tracking-tighter">
+                    <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tighter">
                         <span className={`bg-clip-text text-transparent bg-gradient-to-r ${logoGradient}`}>
                             Create-A-Date
                         </span>
                     </h1>
-                    <p className="text-slate-400 mt-2">{isLoginView ? 'Log in to find your match.' : 'Create an account to begin.'}</p>
+                    <p className="text-slate-400 mt-2">Beyond the swipe.</p>
                 </div>
 
                 <div className="bg-slate-800/50 backdrop-blur-xl border border-slate-700 rounded-2xl p-8 shadow-2xl">
                     {showEmailConfirmation ? (
                         <div className="text-center space-y-4">
                             <div className="text-6xl mb-4">📧</div>
-                            <h2 className="text-2xl font-bold text-white">Check Your Email</h2>
+                            <h2 className="text-xl sm:text-2xl font-bold text-white">Check Your Email</h2>
                             <p className="text-slate-300">We've sent a confirmation link to <strong>{email}</strong>.</p>
                             <p className="text-slate-400 text-sm">Click the link to verify your account, then return here to log in.</p>
                             <div className="mt-4 text-xs text-slate-500">

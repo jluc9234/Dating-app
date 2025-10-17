@@ -48,6 +48,7 @@ export interface DateIdea {
   budget?: BudgetOption;
   dressCode?: DressCodeOption;
   distance?: number; // in miles/kilometers from user's location
+  created_at?: string; // ISO string for creation time
 }
 
 export interface Message {

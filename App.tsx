@@ -3,7 +3,8 @@ import { ActiveView, DateIdea, Match } from './types';
 import { useAuth } from './contexts/AuthContext';
 import { useNotification } from './contexts/NotificationContext';
 import { LocationProvider } from './contexts/LocationContext';
-import { apiService } from './services/apiService';
+import { AuthProvider } from './contexts/AuthContext';
+import { NotificationProvider } from './contexts/NotificationContext';
 
 // Components
 import LoginScreen from './components/LoginScreen';
@@ -17,6 +18,8 @@ import ChatWindow from './components/ChatWindow';
 import ProfileScreen from './components/ProfileScreen';
 import MonetizationModal from './components/MonetizationModal';
 import NotificationToast from './components/NotificationToast';
+import { apiService } from './services/apiService';
+import { MOCK_DATE_IDEAS } from './data/mockData';
 
 const App: React.FC = () => {
     const { currentUser } = useAuth();
@@ -32,9 +35,18 @@ const App: React.FC = () => {
     useEffect(() => {
         const fetchDates = async () => {
             setIsLoadingDates(true);
-            const ideas = await apiService.getDateIdeas();
-            setDateIdeas(ideas);
-            setIsLoadingDates(false);
+            try {
+                const ideas = await apiService.getDateIdeas();
+                const allIdeas = [...MOCK_DATE_IDEAS, ...ideas];
+                // Sort by created_at descending (most recent first)
+                allIdeas.sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
+                setDateIdeas(allIdeas);
+            } catch (error) {
+                console.error('Failed to fetch date ideas, using mock data:', error);
+                setDateIdeas(MOCK_DATE_IDEAS);
+            } finally {
+                setIsLoadingDates(false);
+            }
         };
         if(currentUser) {
             fetchDates();
@@ -79,44 +91,48 @@ const App: React.FC = () => {
 
 
     return (
-        <LocationProvider>
-            <div className="bg-gradient-to-br from-slate-900 via-black to-slate-900 h-screen w-screen overflow-hidden text-white font-sans transition-all duration-500" style={appStyle}>
-                <Header onPremiumClick={() => setMonetizationModalOpen(true)} setActiveView={setActiveView} />
+        <AuthProvider>
+            <NotificationProvider>
+                <LocationProvider>
+                    <div className="bg-gradient-to-br from-slate-900 via-black to-slate-900 h-screen w-screen overflow-hidden text-white font-sans transition-all duration-500" style={appStyle}>
+                        <Header onPremiumClick={() => setMonetizationModalOpen(true)} setActiveView={setActiveView} />
 
-                <main className="h-full w-full">
-                    {renderActiveView()}
-                </main>
-                
-                <BottomNav activeView={activeView} setActiveView={setActiveView} />
+                        <main className="h-full w-full">
+                            {renderActiveView()}
+                        </main>
+                        
+                        <BottomNav activeView={activeView} setActiveView={setActiveView} />
 
-                {/* Modals and Overlays */}
-                {isCreateDateVisible && (
-                    <CreateDate 
-                        onBack={() => setCreateDateVisible(false)} 
-                        onPostDate={handlePostDate} 
-                        onPremiumClick={() => setMonetizationModalOpen(true)}
-                    />
-                )}
-                {selectedMatch && (
-                    <ChatWindow 
-                        match={selectedMatch} 
-                        onBack={() => setSelectedMatch(null)} 
-                        onPremiumClick={() => setMonetizationModalOpen(true)}
-                    />
-                )}
-                <MonetizationModal 
-                    isOpen={isMonetizationModalOpen}
-                    onClose={() => setMonetizationModalOpen(false)}
-                />
+                        {/* Modals and Overlays */}
+                        {isCreateDateVisible && (
+                            <CreateDate 
+                                onBack={() => setCreateDateVisible(false)} 
+                                onPostDate={handlePostDate} 
+                                onPremiumClick={() => setMonetizationModalOpen(true)}
+                            />
+                        )}
+                        {selectedMatch && (
+                            <ChatWindow 
+                                match={selectedMatch} 
+                                onBack={() => setSelectedMatch(null)} 
+                                onPremiumClick={() => setMonetizationModalOpen(true)}
+                            />
+                        )}
+                        <MonetizationModal 
+                            isOpen={isMonetizationModalOpen}
+                            onClose={() => setMonetizationModalOpen(false)}
+                        />
 
-                {/* Notification Container */}
-                <div aria-live="polite" aria-atomic="true" className="absolute top-20 left-1/2 -translate-x-1/2 w-full max-w-sm px-4 space-y-2 z-50 pointer-events-none">
-                    {toastQueue.map(notification => (
-                        <NotificationToast key={notification.id} notification={notification} />
-                    ))}
-                </div>
-            </div>
-        </LocationProvider>
+                        {/* Notification Container */}
+                        <div aria-live="polite" aria-atomic="true" className="absolute top-20 left-1/2 -translate-x-1/2 w-full max-w-sm px-4 space-y-2 z-50 pointer-events-none">
+                            {toastQueue.map(notification => (
+                                <NotificationToast key={notification.id} notification={notification} />
+                            ))}
+                        </div>
+                    </div>
+                </LocationProvider>
+            </NotificationProvider>
+        </AuthProvider>
     );
 };
 
